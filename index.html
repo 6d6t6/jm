@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+
+        .chat-container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-messages {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+
+        .chat-input {
+            margin-top: 10px;
+            display: flex;
+        }
+
+        .chat-input input[type="text"] {
+            flex-grow: 1;
+            padding: 5px;
+        }
+
+        .chat-input button {
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+    <title>JM 1.0.1</title>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-messages" id="chat-messages">
+            <!-- Messages will be displayed here -->
+        </div>
+        <div class="chat-input">
+            <input type="text" id="message-input" placeholder="Type your message">
+            <button id="send-button">Send</button>
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const chatMessages = document.getElementById("chat-messages");
+            const messageInput = document.getElementById("message-input");
+            const sendButton = document.getElementById("send-button");
+
+            // Load existing messages from JSON file
+            fetch("messages.json")
+                .then(response => response.json())
+                .then(messages => {
+                    messages.forEach(message => {
+                        appendMessage(message);
+                    });
+                });
+
+            sendButton.addEventListener("click", () => {
+                const messageText = messageInput.value.trim();
+                if (messageText !== "") {
+                    const message = {
+                        text: messageText,
+                        timestamp: new Date().toLocaleString()
+                    };
+
+                    appendMessage(message);
+                    saveMessageToJSON(message);
+                    messageInput.value = "";
+                }
+            });
+
+            function appendMessage(message) {
+                const messageElement = document.createElement("div");
+                messageElement.classList.add("message");
+                messageElement.innerHTML = `<p>${message.text}</p><small>${message.timestamp}</small>`;
+                chatMessages.appendChild(messageElement);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            function saveMessageToJSON(message) {
+                fetch("messages.json")
+                    .then(response => response.json())
+                    .then(messages => {
+                        messages.push(message);
+                        return fetch("messages.json", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify(messages)
+                        });
+                    });
+            }
+        });
+    </script>
+</body>
+</html>
